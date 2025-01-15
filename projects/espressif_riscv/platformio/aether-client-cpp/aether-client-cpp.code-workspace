@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../../../../examples/button"
+			//"path": "../../../../examples/cloud"
+		}
+	],
+	"settings": {}
+}

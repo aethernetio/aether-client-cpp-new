@@ -1,0 +1,299 @@
+cmake_minimum_required(VERSION 3.16.0)
+
+set(SODIUM_LIBRARY_VERSION_MAJOR 28)
+set(SODIUM_LIBRARY_VERSION_MINOR 0)
+set(VERSION 1.0.19)
+
+configure_file(
+    "${CMAKE_CURRENT_LIST_DIR}/src/libsodium/include/sodium/version.h.in"
+    "${CMAKE_CURRENT_LIST_DIR}/src/libsodium/include/sodium/version.h"
+    @ONLY )
+
+list(APPEND libsodium_sodium_srcs
+            "src/libsodium/sodium/codecs.c"
+            "src/libsodium/sodium/core.c"
+            "src/libsodium/sodium/runtime.c"
+            "src/libsodium/sodium/utils.c"
+            "src/libsodium/sodium/version.c")
+
+list(APPEND libsodium_crypto_aead_srcs
+            "src/libsodium/crypto_aead/aegis128l/aead_aegis128l.c"
+            "src/libsodium/crypto_aead/aegis128l/aegis128l_aesni.c"
+            "src/libsodium/crypto_aead/aegis128l/aegis128l_armcrypto.c"
+            "src/libsodium/crypto_aead/aegis128l/aegis128l_soft.c"
+            "src/libsodium/crypto_aead/aegis256/aead_aegis256.c"
+            "src/libsodium/crypto_aead/aegis256/aegis256_aesni.c"
+            "src/libsodium/crypto_aead/aegis256/aegis256_armcrypto.c"
+            "src/libsodium/crypto_aead/aegis256/aegis256_soft.c"
+            "src/libsodium/crypto_aead/aes256gcm/aead_aes256gcm.c"
+            "src/libsodium/crypto_aead/aes256gcm/aesni/aead_aes256gcm_aesni.c"
+            "src/libsodium/crypto_aead/aes256gcm/armcrypto/aead_aes256gcm_armcrypto.c"
+            "src/libsodium/crypto_aead/chacha20poly1305/aead_chacha20poly1305.c"
+            "src/libsodium/crypto_aead/xchacha20poly1305/aead_xchacha20poly1305.c")
+
+list(APPEND libsodium_crypto_auth_srcs
+            "src/libsodium/crypto_auth/crypto_auth.c"
+            "src/libsodium/crypto_auth/hmacsha256/auth_hmacsha256.c"
+            "src/libsodium/crypto_auth/hmacsha512/auth_hmacsha512.c"
+            "src/libsodium/crypto_auth/hmacsha512256/auth_hmacsha512256.c")
+
+list(APPEND libsodium_crypto_box_srcs
+            "src/libsodium/crypto_box/crypto_box.c"
+            "src/libsodium/crypto_box/crypto_box_easy.c"
+            "src/libsodium/crypto_box/crypto_box_seal.c"
+            "src/libsodium/crypto_box/curve25519xchacha20poly1305/box_curve25519xchacha20poly1305.c"
+            "src/libsodium/crypto_box/curve25519xchacha20poly1305/box_seal_curve25519xchacha20poly1305.c"
+            "src/libsodium/crypto_box/curve25519xsalsa20poly1305/box_curve25519xsalsa20poly1305.c")
+
+list(APPEND libsodium_crypto_core_srcs
+            "src/libsodium/crypto_core/ed25519/core_ed25519.c"
+            "src/libsodium/crypto_core/ed25519/core_h2c.c"
+            "src/libsodium/crypto_core/ed25519/core_ristretto255.c"
+            "src/libsodium/crypto_core/ed25519/ref10/ed25519_ref10.c"
+            "src/libsodium/crypto_core/hchacha20/core_hchacha20.c"
+            "src/libsodium/crypto_core/hsalsa20/core_hsalsa20.c"
+            "src/libsodium/crypto_core/hsalsa20/ref2/core_hsalsa20_ref2.c"
+            "src/libsodium/crypto_core/salsa/ref/core_salsa_ref.c"
+            "src/libsodium/crypto_core/softaes/softaes.c")
+
+list(APPEND libsodium_crypto_generichash_srcs
+            "src/libsodium/crypto_generichash/crypto_generichash.c"
+            "src/libsodium/crypto_generichash/blake2b/generichash_blake2.c"
+            "src/libsodium/crypto_generichash/blake2b/ref/blake2b-compress-avx2.c"
+            "src/libsodium/crypto_generichash/blake2b/ref/blake2b-compress-ref.c"
+            "src/libsodium/crypto_generichash/blake2b/ref/blake2b-compress-sse41.c"
+            "src/libsodium/crypto_generichash/blake2b/ref/blake2b-compress-ssse3.c"
+            "src/libsodium/crypto_generichash/blake2b/ref/blake2b-ref.c"
+            "src/libsodium/crypto_generichash/blake2b/ref/generichash_blake2b.c")
+
+list(APPEND libsodium_crypto_hash_srcs
+            "src/libsodium/crypto_hash/crypto_hash.c"
+            "src/libsodium/crypto_hash/sha256/hash_sha256.c"
+            "src/libsodium/crypto_hash/sha256/cp/hash_sha256_cp.c"
+            "src/libsodium/crypto_hash/sha512/hash_sha512.c"
+            "src/libsodium/crypto_hash/sha512/cp/hash_sha512_cp.c")
+
+list(APPEND libsodium_crypto_kdf_srcs
+            "src/libsodium/crypto_kdf/crypto_kdf.c"
+            "src/libsodium/crypto_kdf/blake2b/kdf_blake2b.c"
+            "src/libsodium/crypto_kdf/hkdf/kdf_hkdf_sha256.c"
+            "src/libsodium/crypto_kdf/hkdf/kdf_hkdf_sha512.c")
+
+list(APPEND libsodium_crypto_kx_srcs
+            "src/libsodium/crypto_kx/crypto_kx.c")
+
+list(APPEND libsodium_crypto_onetimeauth_srcs
+            "src/libsodium/crypto_onetimeauth/crypto_onetimeauth.c"
+            "src/libsodium/crypto_onetimeauth/poly1305/onetimeauth_poly1305.c"
+            "src/libsodium/crypto_onetimeauth/poly1305/donna/poly1305_donna.c"
+            "src/libsodium/crypto_onetimeauth/poly1305/sse2/poly1305_sse2.c")
+
+list(APPEND libsodium_crypto_pwhash_srcs
+            "src/libsodium/crypto_pwhash/crypto_pwhash.c"
+            "src/libsodium/crypto_pwhash/argon2/argon2.c"
+            "src/libsodium/crypto_pwhash/argon2/argon2-core.c"
+            "src/libsodium/crypto_pwhash/argon2/argon2-encoding.c"
+            "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-avx2.c"
+            "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-avx512f.c"
+            "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-ref.c"
+            "src/libsodium/crypto_pwhash/argon2/argon2-fill-block-ssse3.c"
+            "src/libsodium/crypto_pwhash/argon2/blake2b-long.c"
+            "src/libsodium/crypto_pwhash/argon2/pwhash_argon2i.c"
+            "src/libsodium/crypto_pwhash/argon2/pwhash_argon2id.c"
+            "src/libsodium/crypto_pwhash/scryptsalsa208sha256/crypto_scrypt-common.c"
+            "src/libsodium/crypto_pwhash/scryptsalsa208sha256/pbkdf2-sha256.c"
+            "src/libsodium/crypto_pwhash/scryptsalsa208sha256/pwhash_scryptsalsa208sha256.c"
+            "src/libsodium/crypto_pwhash/scryptsalsa208sha256/scrypt_platform.c"
+            "src/libsodium/crypto_pwhash/scryptsalsa208sha256/nosse/pwhash_scryptsalsa208sha256_nosse.c"
+            "src/libsodium/crypto_pwhash/scryptsalsa208sha256/sse/pwhash_scryptsalsa208sha256_sse.c")
+
+list(APPEND libsodium_crypto_scalarmult_srcs
+            "src/libsodium/crypto_scalarmult/crypto_scalarmult.c"
+            "src/libsodium/crypto_scalarmult/curve25519/scalarmult_curve25519.c"
+            "src/libsodium/crypto_scalarmult/curve25519/ref10/x25519_ref10.c"
+            "src/libsodium/crypto_scalarmult/curve25519/sandy2x/curve25519_sandy2x.c"
+            "src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe_frombytes_sandy2x.c"
+            "src/libsodium/crypto_scalarmult/curve25519/sandy2x/fe51_invert.c"
+            "src/libsodium/crypto_scalarmult/ed25519/ref10/scalarmult_ed25519_ref10.c"
+            "src/libsodium/crypto_scalarmult/ristretto255/ref10/scalarmult_ristretto255_ref10.c")
+
+list(APPEND libsodium_crypto_secretbox_srcs
+            "src/libsodium/crypto_secretbox/crypto_secretbox.c"
+            "src/libsodium/crypto_secretbox/crypto_secretbox_easy.c"
+            "src/libsodium/crypto_secretbox/xchacha20poly1305/secretbox_xchacha20poly1305.c"
+            "src/libsodium/crypto_secretbox/xsalsa20poly1305/secretbox_xsalsa20poly1305.c")
+
+list(APPEND libsodium_crypto_secretstream_srcs
+            "src/libsodium/crypto_secretstream/xchacha20poly1305/secretstream_xchacha20poly1305.c")
+
+list(APPEND libsodium_crypto_shorthash_srcs
+            "src/libsodium/crypto_shorthash/crypto_shorthash.c"
+            "src/libsodium/crypto_shorthash/siphash24/shorthash_siphash24.c"
+            "src/libsodium/crypto_shorthash/siphash24/shorthash_siphashx24.c"
+            "src/libsodium/crypto_shorthash/siphash24/ref/shorthash_siphash24_ref.c"
+            "src/libsodium/crypto_shorthash/siphash24/ref/shorthash_siphashx24_ref.c")
+
+list(APPEND libsodium_crypto_sign_srcs
+            "src/libsodium/crypto_sign/crypto_sign.c"
+            "src/libsodium/crypto_sign/ed25519/sign_ed25519.c"
+            "src/libsodium/crypto_sign/ed25519/ref10/keypair.c"
+            "src/libsodium/crypto_sign/ed25519/ref10/open.c"
+            "src/libsodium/crypto_sign/ed25519/ref10/sign.c")
+
+list(APPEND libsodium_crypto_stream_srcs
+            "src/libsodium/crypto_stream/crypto_stream.c"
+            "src/libsodium/crypto_stream/chacha20/stream_chacha20.c"
+            "src/libsodium/crypto_stream/chacha20/dolbeau/chacha20_dolbeau-avx2.c"
+            "src/libsodium/crypto_stream/chacha20/dolbeau/chacha20_dolbeau-ssse3.c"
+            "src/libsodium/crypto_stream/chacha20/ref/chacha20_ref.c"
+            "src/libsodium/crypto_stream/salsa20/stream_salsa20.c"
+            "src/libsodium/crypto_stream/salsa20/ref/salsa20_ref.c"
+            "src/libsodium/crypto_stream/salsa20/xmm6/salsa20_xmm6.c"
+            "src/libsodium/crypto_stream/salsa20/xmm6int/salsa20_xmm6int-avx2.c"
+            "src/libsodium/crypto_stream/salsa20/xmm6int/salsa20_xmm6int-sse2.c"
+            "src/libsodium/crypto_stream/salsa208/stream_salsa208.c"
+            "src/libsodium/crypto_stream/salsa208/ref/stream_salsa208_ref.c"
+            "src/libsodium/crypto_stream/salsa2012/stream_salsa2012.c"
+            "src/libsodium/crypto_stream/salsa2012/ref/stream_salsa2012_ref.c"
+            "src/libsodium/crypto_stream/xchacha20/stream_xchacha20.c"
+            "src/libsodium/crypto_stream/xsalsa20/stream_xsalsa20.c")
+
+list(APPEND libsodium_crypto_verify_srcs
+            "src/libsodium/crypto_verify/verify.c")
+
+list(APPEND libsodium_randombytes_srcs
+            "src/libsodium/randombytes/randombytes.c"
+            "src/libsodium/randombytes/internal/randombytes_internal_random.c"
+            "src/libsodium/randombytes/sysrandom/randombytes_sysrandom.c")
+
+set(include_dirs "../../"
+                     "src/libsodium/include"
+                     "src/libsodium/include/sodium"
+                     "src/libsodium/include/sodium/private"
+                     "")
+                     
+if(NOT CM_PLATFORM )
+    project(sodium VERSION 1.0.0 LANGUAGES CXX)
+
+    add_library(${PROJECT_NAME} STATIC ${libsodium_sodium_srcs}
+                            ${libsodium_crypto_aead_srcs}
+                            ${libsodium_crypto_auth_srcs}
+                            ${libsodium_crypto_box_srcs}
+                            ${libsodium_crypto_core_srcs}
+                            ${libsodium_crypto_generichash_srcs}
+                            ${libsodium_crypto_hash_srcs}
+                            ${libsodium_crypto_kdf_srcs}
+                            ${libsodium_crypto_kx_srcs}
+                            ${libsodium_crypto_onetimeauth_srcs}
+                            ${libsodium_crypto_pwhash_srcs}
+                            ${libsodium_crypto_scalarmult_srcs}
+                            ${libsodium_crypto_secretbox_srcs}
+                            ${libsodium_crypto_secretstream_srcs}
+                            ${libsodium_crypto_shorthash_srcs}
+                            ${libsodium_crypto_sign_srcs}
+                            ${libsodium_crypto_stream_srcs}
+                            ${libsodium_crypto_verify_srcs}
+                            ${libsodium_randombytes_srcs})
+
+    target_include_directories(${PROJECT_NAME} PRIVATE ${include_dirs})
+    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(${PROJECT_NAME} PRIVATE src/libsodium/include/)
+
+else()
+    idf_build_get_property(CM_PLATFORM CM_PLATFORM)
+    if(CM_PLATFORM STREQUAL "ESP32")
+        #ESP32 CMake
+        idf_component_register(SRCS
+                            ${libsodium_sodium_srcs}
+                            ${libsodium_crypto_aead_srcs}
+                            ${libsodium_crypto_auth_srcs}
+                            ${libsodium_crypto_box_srcs}
+                            ${libsodium_crypto_core_srcs}
+                            ${libsodium_crypto_generichash_srcs}
+                            ${libsodium_crypto_hash_srcs}
+                            ${libsodium_crypto_kdf_srcs}
+                            ${libsodium_crypto_kx_srcs}
+                            ${libsodium_crypto_onetimeauth_srcs}
+                            ${libsodium_crypto_pwhash_srcs}
+                            ${libsodium_crypto_scalarmult_srcs}
+                            ${libsodium_crypto_secretbox_srcs}
+                            ${libsodium_crypto_secretstream_srcs}
+                            ${libsodium_crypto_shorthash_srcs}
+                            ${libsodium_crypto_sign_srcs}
+                            ${libsodium_crypto_stream_srcs}
+                            ${libsodium_crypto_verify_srcs}
+                            ${libsodium_randombytes_srcs}
+                            INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+                            INCLUDE_DIRS ${include_dirs}
+                            REQUIRES unity esp_timer)
+
+        target_compile_options(${COMPONENT_LIB} PRIVATE "-Wno-unknown-pragmas"
+                                                        "-Wno-nonnull"
+                                                        "-Wno-unused-variable"
+                                                        "-Wno-unused-function"
+                                                        "-Wno-type-limits"
+                                                        "-Wno-deprecated-declarations")
+    else()
+        #ERROR
+        message(SEND_ERROR "You must specify the CMAKE version!")
+    endif()
+endif() 
+
+if(NOT CM_PLATFORM )
+    set_target_properties(${PROJECT_NAME}
+        PROPERTIES 
+            C_STANDARD          17
+            C_STANDARD_REQUIRED ON
+            PUBLIC_HEADER       "${${PROJECT_NAME}_PUBLIC_HEADERS}"
+            EXPORT_NAME         framework
+    )
+
+    target_compile_definitions(${PROJECT_NAME} PUBLIC SODIUM_STATIC)
+
+    target_compile_options(${PROJECT_NAME}
+        PRIVATE
+            # Clang
+            $<$<C_COMPILER_ID:Clang>:
+                -Wno-unknown-pragmas
+                -Wno-nonnull
+                -Wno-unused-variable
+                -Wno-unused-function
+                -Wno-type-limits
+                -Wno-deprecated-declarations
+            >
+            
+            # GCC
+            $<$<C_COMPILER_ID:GNU>:
+                -Wno-unknown-pragmas 
+                -Wno-nonnull 
+                -Wno-unused-variable 
+                -Wno-unused-function 
+                -Wno-type-limits 
+                -Wno-deprecated-declarations
+            >
+
+            # MSVC
+            $<$<C_COMPILER_ID:MSVC>:>
+    )
+
+    ## Target installation
+    install(TARGETS   ${PROJECT_NAME}
+        EXPORT        ${PROJECT_NAME}Targets
+        ARCHIVE       DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY       DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
+        COMPONENT     library
+    )
+
+    ## Target's cmake files: targets export
+    install(EXPORT  ${PROJECT_NAME}Targets
+        NAMESPACE   ${PROJECT_NAME}::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+
+    ## Target's cmake files: config and version config for find_package()
+    install(FILES   ${PROJECT_NAME}Config.cmake
+                    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    )
+endif()

@@ -1,0 +1,64 @@
+diff --git a/impl/random.h b/impl/random.h
+index b85a4a1..acd24eb 100644
+--- a/impl/random.h
++++ b/impl/random.h
+@@ -7,7 +7,16 @@ static TLS struct {
+ 
+ #if defined(AVR) && !defined(__unix__)
+ #    include "random/avr.h"
+-#elif (defined(ESP32) || defined(ESP8266)) && !defined(__unix__)
++#elif (defined(CONFIG_IDF_TARGET_ESP32) || \
++       defined(ESP8266) || \
++       defined(CONFIG_IDF_TARGET_ESP32S2) || \
++       defined(CONFIG_IDF_TARGET_ESP32S3) || \
++       defined(CONFIG_IDF_TARGET_ESP32C2) || \
++       defined(CONFIG_IDF_TARGET_ESP32C3) || \
++       defined(CONFIG_IDF_TARGET_ESP32C5) || \
++       defined(CONFIG_IDF_TARGET_ESP32C6) || \
++       defined(CONFIG_IDF_TARGET_ESP32H2) || \
++       defined(CONFIG_IDF_TARGET_ESP32P4)) && !defined(__unix__)
+ #    include "random/esp32.h"
+ #elif defined(PARTICLE) && defined(PLATFORM_ID) && PLATFORM_ID > 2 && !defined(__unix__)
+ #    include "random/particle.h"
+diff --git a/impl/random/esp32.h b/impl/random/esp32.h
+index 145ec61..4f75bb7 100644
+--- a/impl/random/esp32.h
++++ b/impl/random/esp32.h
+@@ -1,10 +1,21 @@
+ // Important: RF *must* be activated on ESP board
+ // https://techtutorialsx.com/2017/12/22/esp32-arduino-random-number-generation/
+-#ifdef ESP32
+-#    include <esp_system.h>
++#if (defined(CONFIG_IDF_TARGET_ESP32) || \
++     defined(ESP8266) || \
++     defined(CONFIG_IDF_TARGET_ESP32S2) || \
++     defined(CONFIG_IDF_TARGET_ESP32S3) || \
++     defined(CONFIG_IDF_TARGET_ESP32C2) || \
++     defined(CONFIG_IDF_TARGET_ESP32C3) || \
++     defined(CONFIG_IDF_TARGET_ESP32C5) || \
++     defined(CONFIG_IDF_TARGET_ESP32C6) || \
++     defined(CONFIG_IDF_TARGET_ESP32H2) || \
++     defined(CONFIG_IDF_TARGET_ESP32P4))
++#include <esp_random.h>
++#include <freertos/FreeRTOS.h>
++#include <freertos/timers.h>
+ #endif
+ 
+-#ifdef ARDUINO
++#if defined(ARDUINO)
+ #    include <Arduino.h>
+ #endif
+ 
+@@ -20,7 +31,12 @@ hydro_random_init(void)
+     while (ebits < 256) {
+         uint32_t r = esp_random();
+ 
++#ifdef ARDUINO
+         delay(10);
++#endif
++#ifdef ESP32
++        vTaskDelay(10);
++#endif
+         hydro_hash_update(&st, (const uint32_t *) &r, sizeof r);
+         ebits += 32;
+     }

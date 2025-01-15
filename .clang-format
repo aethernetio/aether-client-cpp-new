@@ -1,0 +1,8 @@
+---
+Language:        Cpp
+BasedOnStyle:  Google
+
+IncludeBlocks: Preserve
+SortIncludes: Never
+IndentPPDirectives: AfterHash
+InsertNewlineAtEOF: On

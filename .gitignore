@@ -1,0 +1,60 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+*.xcbkptlist
+*.xcuserstate
+**/DerivedData
+**/xcuserdata
+
+# Configs
+*.old
+**.user
+
+# Build directory
+build/
+**.cmake
+**.xcodeproj
+**/CMakeCache.txt
+**/CMakeFiles
+**/CMakeScripts
+**/Debug
+projects/apple_x86/xcode_cmake/aether-client-cpp/aether-client-cpp
+/projects/apple_x86/xcode_cmake/aether-client-cpp/state
+/projects/apple_x86/xcode_cmake/aether-client-cpp/tests
+projects/intel_x86/linux/gcc/aether-client-cpp
+/projects/intel_x86/linux/gcc/state
+/projects/intel_x86/linux/gcc/tests
+*.vcxproj
+*.filters
+*.sln
+*.DS_Store
+*.vs
