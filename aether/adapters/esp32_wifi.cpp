@@ -44,7 +44,8 @@ namespace ae {
 Esp32WifiAdapter::Esp32WifiAdapter(ObjPtr<Aether> aether, IPoller::ptr poller,
                                    std::string ssid, std::string pass,
                                    Domain* domain)
-    : ParentWifiAdapter(aether, poller, ssid, pass, domain) {
+    : ParentWifiAdapter{std::move(aether), std::move(poller), std::move(ssid),
+                        std::move(pass), domain} {
   AE_TELED_DEBUG("Esp32Wifi instance created!");
 }
 
@@ -84,14 +85,13 @@ void Esp32WifiAdapter::Update(TimePoint t) {
     Connect();
   }
 
-  // FIXME: 10?
-  update_time_ = t + std::chrono::milliseconds(10);
+  update_time_ = t;
 }
 
 void Esp32WifiAdapter::Connect(void) {
   if (esp_netif_ == nullptr) {
-    wifi_init_nvs();
-    wifi_init_sta();
+    WifiInitNvs();
+    WifiInitSta();
   }
   AE_TELED_DEBUG("WiFi connected to the AP");
 }
@@ -106,13 +106,13 @@ void Esp32WifiAdapter::DisConnect(void) {
   AE_TELED_DEBUG("WiFi disconnected from the AP");
 }
 
-void Esp32WifiAdapter::event_handler(void* arg, esp_event_base_t event_base,
-                                     int32_t event_id, void* event_data) {
-  if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) {
+void Esp32WifiAdapter::EventHandler(void* arg, esp_event_base_t event_base,
+                                    int32_t event_id, void* event_data) {
+  if ((event_base == WIFI_EVENT) && (event_id == WIFI_EVENT_STA_START)) {
     esp_wifi_connect();
-  } else if (event_base == WIFI_EVENT &&
-             event_id == WIFI_EVENT_STA_DISCONNECTED) {
-    if (s_retry_num < MAX_RETRY) {
+  } else if ((event_base == WIFI_EVENT) &&
+             (event_id == WIFI_EVENT_STA_DISCONNECTED)) {
+    if (s_retry_num < kMaxRetry) {
       esp_wifi_connect();
       s_retry_num++;
       AE_TELED_DEBUG("retry to connect to the AP");
@@ -128,7 +128,7 @@ void Esp32WifiAdapter::event_handler(void* arg, esp_event_base_t event_base,
   }
 }
 
-void Esp32WifiAdapter::wifi_init_sta(void) {
+void Esp32WifiAdapter::WifiInitSta(void) {
   int string_size{0};
   wifi_config_t wifi_config{};
   wifi_scan_threshold_t wifi_threshold{};
@@ -149,10 +149,10 @@ void Esp32WifiAdapter::wifi_init_sta(void) {
   esp_event_handler_instance_t instance_any_id;
   esp_event_handler_instance_t instance_got_ip;
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
-      WIFI_EVENT, ESP_EVENT_ANY_ID, &(Esp32WifiAdapter::event_handler), NULL,
+      WIFI_EVENT, ESP_EVENT_ANY_ID, &(Esp32WifiAdapter::EventHandler), nullptr,
       &instance_any_id));
   ESP_ERROR_CHECK(esp_event_handler_instance_register(
-      IP_EVENT, IP_EVENT_STA_GOT_IP, &(Esp32WifiAdapter::event_handler), NULL,
+      IP_EVENT, IP_EVENT_STA_GOT_IP, &(Esp32WifiAdapter::EventHandler), nullptr,
       &instance_got_ip));
 
   wifi_threshold.rssi = 0;
@@ -163,23 +163,27 @@ void Esp32WifiAdapter::wifi_init_sta(void) {
   AE_TELED_DEBUG("Connecting to ap SSID:{} PSWD:{}", ssid_, pass_);
   std::fill_n(wifi_config.sta.ssid, sizeof(wifi_config.sta.ssid), 0);
   string_size = sizeof(wifi_config.sta.ssid);
-  if (ssid_.size() < string_size) string_size = ssid_.size();
+  if (ssid_.size() < string_size) {
+    string_size = ssid_.size();
+  }
   ssid_.copy(reinterpret_cast<char*>(wifi_config.sta.ssid), string_size);
 
   std::fill_n(wifi_config.sta.password, sizeof(wifi_config.sta.password), 0);
   string_size = sizeof(wifi_config.sta.password);
-  if (pass_.size() < string_size) string_size = pass_.size();
+  if (pass_.size() < string_size) {
+    string_size = pass_.size();
+  }
   pass_.copy(reinterpret_cast<char*>(wifi_config.sta.password), string_size);
 
   ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
   ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
   ESP_ERROR_CHECK(esp_wifi_start());
 
-  AE_TELED_DEBUG("wifi_init_sta finished.");
+  AE_TELED_DEBUG("WifiInitSta finished.");
 
   /* Waiting until either the connection is established (WIFI_CONNECTED_BIT) or
    * connection failed for the maximum number of re-tries (WIFI_FAIL_BIT). The
-   * bits are set by event_handler() (see above) */
+   * bits are set by EventHandler() (see above) */
   EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group,
                                          WIFI_CONNECTED_BIT | WIFI_FAIL_BIT,
                                          pdFALSE, pdFALSE, portMAX_DELAY);
@@ -189,9 +193,11 @@ void Esp32WifiAdapter::wifi_init_sta(void) {
   if (bits & WIFI_CONNECTED_BIT) {
     AE_TELED_DEBUG("Connected to ap SSID:{} PSWD:{}", wifi_config.sta.ssid,
                    wifi_config.sta.password);
+    wifi_connected_event_.Emit(true);
   } else if (bits & WIFI_FAIL_BIT) {
     AE_TELED_DEBUG("Failed to connect to SSID:{}, PSWD:{}",
                    wifi_config.sta.ssid, wifi_config.sta.password);
+    wifi_connected_event_.Emit(false);
   } else {
     AE_TELED_DEBUG("UNEXPECTED EVENT");
   }
@@ -204,7 +210,7 @@ void Esp32WifiAdapter::wifi_init_sta(void) {
   vEventGroupDelete(s_wifi_event_group);
 }
 
-void Esp32WifiAdapter::wifi_init_nvs(void) {
+void Esp32WifiAdapter::WifiInitNvs(void) {
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
       ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {

@@ -33,11 +33,15 @@
 #  include "lwip/err.h"
 #  include "lwip/sys.h"
 
+#  include "aether/events/events.h"
+#  include "aether/events/event_subscription.h"
 #  include "aether/adapters/parent_wifi.h"
 
 namespace ae {
 class Esp32WifiAdapter : public ParentWifiAdapter {
   AE_OBJECT(Esp32WifiAdapter, ParentWifiAdapter, 0)
+
+  static constexpr int kMaxRetry = 10;
 
  public:
 #  ifdef AE_DISTILLATION
@@ -60,14 +64,14 @@ class Esp32WifiAdapter : public ParentWifiAdapter {
   void Connect(void);
   void DisConnect(void);
 
-  static void event_handler(void* arg, esp_event_base_t event_base,
-                            int32_t event_id, void* event_data);
-  void wifi_init_sta(void);
-  void wifi_init_nvs(void);
+  static void EventHandler(void* arg, esp_event_base_t event_base,
+                           int32_t event_id, void* event_data);
+  void WifiInitSta(void);
+  void WifiInitNvs(void);
 
   esp_netif_t* esp_netif_{};
   bool connected_{false};
-  static constexpr int MAX_RETRY = 10;
+  Event<void(bool result)> wifi_connected_event_;
 };
 }  // namespace ae
 
