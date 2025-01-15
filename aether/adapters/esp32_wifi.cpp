@@ -40,6 +40,77 @@ static EventGroupHandle_t s_wifi_event_group;
 static int s_retry_num{0};
 
 namespace ae {
+
+Esp32WifiAdapter::CreateTransportAction::CreateTransportAction(
+    ActionContext action_context, Esp32WifiAdapter* adapter, Obj::ptr aether,
+    IPoller::ptr poller, IpAddressPortProtocol address_port_protocol)
+    : ae::CreateTransportAction{action_context},
+      adapter_{adapter},
+      aether_{std::move(aether)},
+      poller_{std::move(poller)},
+      address_port_protocol_{std::move(address_port_protocol)},
+      once_{false},
+      failed_{false} {
+  CreateTransport();
+}
+
+Esp32WifiAdapter::CreateTransportAction::CreateTransportAction(
+    ActionContext action_context,
+    EventSubscriber<void(bool)> wifi_connected_event, Esp32WifiAdapter* adapter,
+    Obj::ptr aether, IPoller::ptr poller,
+    IpAddressPortProtocol address_port_protocol)
+    : ae::CreateTransportAction{action_context},
+      adapter_{adapter},
+      aether_{std::move(aether)},
+      poller_{std::move(poller)},
+      address_port_protocol_{std::move(address_port_protocol)},
+      once_{true},
+      failed_{false},
+      wifi_connected_subscription_{
+          wifi_connected_event.Subscribe([this](auto result) {
+            if (result) {
+              CreateTransport();
+            } else {
+              failed_ = true;
+            }
+            Action::Trigger();
+          })} {}
+
+TimePoint Esp32WifiAdapter::CreateTransportAction::Update(
+    TimePoint current_time) {
+  if (transport_ && once_) {
+    Action::Result(*this);
+    once_ = false;
+  } else if (failed_ && once_) {
+    Action::Error(*this);
+    once_ = false;
+  }
+  return current_time;
+}
+
+Ptr<ITransport> Esp32WifiAdapter::CreateTransportAction::transport() const {
+  return transport_;
+}
+
+void Esp32WifiAdapter::CreateTransportAction::CreateTransport() {
+  adapter_->CleanDeadTransports();
+  transport_ = adapter_->FindInCache(address_port_protocol_);
+  if (!transport_) {
+#  if defined(LWIP_TCP_TRANSPORT_ENABLED)
+    assert(address_port_protocol_.protocol == Protocol::kTcp);
+    transport_ =
+        MakePtr<LwipTcpTransport>(*aether_.as<Aether>()->action_processor,
+                                  poller_, address_port_protocol_);
+#  else
+    return {};
+#  endif
+  } else {
+    AE_TELED_DEBUG("Got transport from cache");
+  }
+
+  adapter_->AddToCache(address_port_protocol_, transport_);
+}
+
 #  if defined AE_DISTILLATION
 Esp32WifiAdapter::Esp32WifiAdapter(ObjPtr<Aether> aether, IPoller::ptr poller,
                                    std::string ssid, std::string pass,
@@ -58,25 +129,20 @@ Esp32WifiAdapter::~Esp32WifiAdapter() {
 }
 #  endif  // AE_DISTILLATION
 
-Ptr<ITransport> Esp32WifiAdapter::CreateTransport(
+ActionView<ae::CreateTransportAction> Esp32WifiAdapter::CreateTransport(
     IpAddressPortProtocol const& address_port_protocol) {
-  CleanDeadTransports();
-  auto transport = FindInCache(address_port_protocol);
-  if (transport) {
-    AE_TELED_DEBUG("Got transport from cache");
-    return transport;
+  if (!create_transport_actions_) {
+    create_transport_actions_ = MakePtr<ActionList<CreateTransportAction>>(
+        ActionContext{*aether_.as<Aether>()->action_processor});
   }
-
-#  if defined(LWIP_TCP_TRANSPORT_ENABLED)
-  assert(address_port_protocol.protocol == Protocol::kTcp);
-  transport = MakePtr<LwipTcpTransport>(
-      *static_cast<Aether::ptr>(aether_)->action_processor, poller_,
-      address_port_protocol);
-#  else
-  return {};
-#  endif
-  AddToCache(address_port_protocol, transport);
-  return transport;
+  if (connected_) {
+    return create_transport_actions_->Emplace(this, aether_, poller_,
+                                              address_port_protocol);
+  } else {
+    return create_transport_actions_->Emplace(
+        EventSubscriber{wifi_connected_event_}, this, aether_, poller_,
+        address_port_protocol);
+  }
 }
 
 void Esp32WifiAdapter::Update(TimePoint t) {
