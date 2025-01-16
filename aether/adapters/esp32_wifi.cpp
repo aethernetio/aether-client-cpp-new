@@ -49,8 +49,9 @@ Esp32WifiAdapter::CreateTransportAction::CreateTransportAction(
       aether_{std::move(aether)},
       poller_{std::move(poller)},
       address_port_protocol_{std::move(address_port_protocol)},
-      once_{false},
+      once_{true},
       failed_{false} {
+  AE_TELED_DEBUG("CreateTransport immediately!");
   CreateTransport();
 }
 
@@ -74,7 +75,9 @@ Esp32WifiAdapter::CreateTransportAction::CreateTransportAction(
               failed_ = true;
             }
             Action::Trigger();
-          })} {}
+          })} {
+  AE_TELED_DEBUG("CreateTransport wait for wifi connection!");
+}
 
 TimePoint Esp32WifiAdapter::CreateTransportAction::Update(
     TimePoint current_time) {
