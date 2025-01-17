@@ -32,7 +32,7 @@
 #include "aether/client_connections/client_connection.h"
 
 namespace ae {
-class P2pStream : public ByteStream {
+class P2pStream final : public ByteStream {
  public:
   P2pStream(ActionContext action_context, Ptr<Client> const& client,
             Uid destination, StreamId stream_id);
