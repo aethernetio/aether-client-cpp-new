@@ -23,15 +23,16 @@
 
 #include "aether/stream_api/istream.h"
 #include "aether/stream_api/safe_stream.h"
+#include "aether/stream_api/sized_packet_stream.h"
 #include "aether/stream_api/safe_stream/safe_stream_types.h"
 
 #include "aether/client_messages/p2p_message_stream.h"
 
 namespace ae {
 
-class P2pSafeStream : public ByteStream {
+class P2pSafeStream final : public ByteStream {
  public:
-  P2pSafeStream(ActionContext action_context, SafeStreamConfig config,
+  P2pSafeStream(ActionContext action_context, SafeStreamConfig const& config,
                 Ptr<P2pStream> base_stream);
 
   AE_CLASS_NO_COPY_MOVE(P2pSafeStream)
@@ -40,6 +41,7 @@ class P2pSafeStream : public ByteStream {
   void LinkOut(OutGate& out) override;
 
  private:
+  SizedPacketGate sized_packet_gate_;
   SafeStream safe_stream_;
   Ptr<P2pStream> base_stream_;
 };

@@ -20,14 +20,15 @@
 
 namespace ae {
 P2pSafeStream::P2pSafeStream(ActionContext action_context,
-                             SafeStreamConfig config,
+                             SafeStreamConfig const& config,
                              Ptr<P2pStream> base_stream)
-    : safe_stream_{action_context, config},
+    : sized_packet_gate_{},
+      safe_stream_{action_context, config},
       base_stream_{std::move(base_stream)} {
-  Tie(safe_stream_, *base_stream_);
+  Tie(sized_packet_gate_, safe_stream_, *base_stream_);
 }
 
-P2pSafeStream::InGate& P2pSafeStream::in() { return safe_stream_.in(); }
+P2pSafeStream::InGate& P2pSafeStream::in() { return sized_packet_gate_; }
 
 void P2pSafeStream::LinkOut(OutGate& /* out */) { assert(false); }
 
