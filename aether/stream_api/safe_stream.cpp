@@ -48,7 +48,11 @@ TimePoint SafeStreamWriteAction::Update(TimePoint current_time) {
 }
 
   // TODO: add tests for stop
-void SafeStreamWriteAction::Stop() { sending_data_action_->Stop(); }
+void SafeStreamWriteAction::Stop() {
+  if (sending_data_action_) {
+    sending_data_action_->Stop();
+  }
+}
 
 SafeStream::SafeStreamInGate::SafeStreamInGate(
     ActionContext action_context,
@@ -56,10 +60,11 @@ SafeStream::SafeStreamInGate::SafeStreamInGate(
     std::size_t max_data_size)
     : packet_send_actions_{action_context},
       safe_stream_sending_{std::move(safe_stream_sending)},
-      max_data_size_{max_data_size} {}
+      stream_info_{max_data_size, {}, {}, {}} {}
 
-ActionView<StreamWriteAction> SafeStream::SafeStreamInGate::WriteIn(
-    DataBuffer buffer, TimePoint /* current_time */) {
+ActionView<StreamWriteAction> SafeStream::SafeStreamInGate::Write(
+    DataBuffer&& buffer, TimePoint /* current_time */) {
+  // TODO: add check for is writable
   auto action = packet_send_actions_.Emplace(
       safe_stream_sending_->SendData(std::move(buffer)));
   return action;
@@ -72,28 +77,33 @@ void SafeStream::SafeStreamInGate::WriteOut(DataBuffer const& buffer) {
 void SafeStream::SafeStreamInGate::LinkOut(OutGate& gate) {
   out_ = &gate;
 
-  safe_stream_sending_->set_max_data_size(out_->max_write_in_size());
+  auto update_stream_info = [this]() {
+    auto out_info = out_->stream_info();
+    stream_info_.is_linked = out_info.is_linked;
+    stream_info_.is_writeble = out_info.is_writeble;
+    stream_info_.is_soft_writable = out_info.is_soft_writable;
 
-  gate_update_subscription_ = out_->gate_update_event().Subscribe([this]() {
-    safe_stream_sending_->set_max_data_size(out_->max_write_in_size());
+    safe_stream_sending_->set_max_data_size(out_info.max_element_size);
     gate_update_event_.Emit();
-  });
+  };
 
-  gate_update_event_.Emit();
+  gate_update_subscription_ =
+      out_->gate_update_event().Subscribe(update_stream_info);
+  update_stream_info();
 }
 
-std::size_t SafeStream::SafeStreamInGate::max_write_in_size() const {
-  return max_data_size_;
+StreamInfo SafeStream::SafeStreamInGate::stream_info() const {
+  return stream_info_;
 }
 
 SafeStream::SafeStreamOutGate::SafeStreamOutGate(
     ProtocolContext& protocol_context)
     : protocol_context_{protocol_context} {}
 
-ActionView<StreamWriteAction> SafeStream::SafeStreamOutGate::WriteIn(
-    DataBuffer buffer, TimePoint current_time) {
+ActionView<StreamWriteAction> SafeStream::SafeStreamOutGate::Write(
+    DataBuffer&& buffer, TimePoint current_time) {
   assert(out_);
-  return out_->WriteIn(std::move(buffer), current_time);
+  return out_->Write(std::move(buffer), current_time);
 }
 
 void SafeStream::SafeStreamOutGate::LinkOut(OutGate& gate) {
@@ -119,20 +129,22 @@ SafeStream::SafeStream(ProtocolContext& protocol_context,
       in_{MakePtr<SafeStreamInGate>(action_context_, safe_stream_sending_,
                                     config.max_data_size)},
       out_{MakePtr<SafeStreamOutGate>(protocol_context_)} {
-  subscriptions_.Push(
-      safe_stream_sending_.send_data_event().Subscribe(
-          [this](auto offset, auto data, auto current_time) {
-            OnDataWrite(offset, data, current_time);
-          }),
-      safe_stream_receiving_.receive_event().Subscribe([this](auto data) {
-        // move received data to top read stream
-        in_->WriteOut(std::move(data));
-      }));
+  subscriptions_.Push(safe_stream_sending_.send_data_event().Subscribe(
+                          [this](auto offset, auto&& data, auto current_time) {
+                            OnDataWrite(offset,
+                                        std::forward<decltype(data)>(data),
+                                        current_time);
+                          }),
+                      safe_stream_receiving_.receive_event().Subscribe(
+                          [this](auto const& data) {
+                            // move received data to top read stream
+                            in_->WriteOut(std::move(data));
+                          }));
 
   subscriptions_.Push(
       safe_stream_receiving_.send_data_event().Subscribe(
-          [this](auto data, auto current_time) {
-            OnDataReaderSend(std::move(data), current_time);
+          [this](auto&& data, auto current_time) {
+            OnDataReaderSend(std::forward<decltype(data)>(data), current_time);
           }),
       protocol_context_.OnMessage<SafeStreamApi::Confirm>(
           [this](auto const& message) {
@@ -167,9 +179,9 @@ ByteGate::Base& SafeStream::in() { return *in_; }
 
 void SafeStream::LinkOut(OutGate& gate) { out_->LinkOut(gate); }
 
-void SafeStream::OnDataWrite(SafeStreamRingIndex offset, DataBuffer data,
+void SafeStream::OnDataWrite(SafeStreamRingIndex offset, DataBuffer&& data,
                              TimePoint current_time) {
-  auto write_action = out_->WriteIn(std::move(data), current_time);
+  auto write_action = out_->Write(std::move(data), current_time);
 
   subscriptions_.Push(
       write_action->SubscribeOnResult([this, offset](auto const& /* action */) {
@@ -185,8 +197,8 @@ void SafeStream::OnDataWrite(SafeStreamRingIndex offset, DataBuffer data,
       }));
 }
 
-void SafeStream::OnDataReaderSend(DataBuffer data, TimePoint current_time) {
-  out_->WriteIn(std::move(data), current_time);
+void SafeStream::OnDataReaderSend(DataBuffer&& data, TimePoint current_time) {
+  out_->Write(std::move(data), current_time);
 }
 
 }  // namespace ae

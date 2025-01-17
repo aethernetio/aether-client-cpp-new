@@ -253,7 +253,7 @@ void SafeStreamSendingAction::SendRepeat(SendingChunk const& chunk,
 }
 
 void SafeStreamSendingAction::SendDataBuffer(SafeStreamRingIndex offset,
-                                             DataBuffer packet,
+                                             DataBuffer&& packet,
                                              TimePoint current_time) {
   send_data_event_.Emit(offset, std::move(packet), current_time);
 }
