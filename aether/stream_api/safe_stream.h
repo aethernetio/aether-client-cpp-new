@@ -82,8 +82,7 @@ class SafeStream : public ByteStream {
   };
 
  public:
-  SafeStream(ProtocolContext &protocol_context, ActionContext action_context,
-             SafeStreamConfig config);
+  SafeStream(ActionContext action_context, SafeStreamConfig config);
 
   ByteGate::Base &in() override;
   void LinkOut(OutGate &gate) override;
@@ -94,9 +93,9 @@ class SafeStream : public ByteStream {
 
   void OnDataReaderSend(DataBuffer data, TimePoint current_time);
 
-  ProtocolContext &protocol_context_;
   ActionContext action_context_;
 
+  ProtocolContext protocol_context_;
   SafeStreamSendingAction safe_stream_sending_;
   SafeStreamReceivingAction safe_stream_receiving_;
 

@@ -110,10 +110,8 @@ void SafeStream::SafeStreamOutGate::LinkOut(OutGate& gate) {
   gate_update_event_.Emit();
 }
 
-SafeStream::SafeStream(ProtocolContext& protocol_context,
-                       ActionContext action_context, SafeStreamConfig config)
-    : protocol_context_{protocol_context},
-      action_context_{action_context},
+SafeStream::SafeStream(ActionContext action_context, SafeStreamConfig config)
+    : action_context_{action_context},
       safe_stream_sending_{action_context_, protocol_context_, config},
       safe_stream_receiving_{action_context_, protocol_context_, config},
       in_{MakePtr<SafeStreamInGate>(action_context_, safe_stream_sending_,
