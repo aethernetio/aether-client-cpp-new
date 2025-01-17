@@ -182,7 +182,9 @@ list(APPEND client_connections_srcs
 list(APPEND client_messages_srcs
             "client_messages/message_stream.cpp"
             "client_messages/message_stream_dispatcher.cpp"
-            "client_messages/p2p_message_stream.cpp")
+            "client_messages/p2p_message_stream.cpp"
+            "client_messages/p2p_safe_message_stream.cpp"
+            )
 
 list(APPEND port_srcs            
             "port/tele_init.cpp"
