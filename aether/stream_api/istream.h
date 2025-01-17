@@ -87,6 +87,9 @@ class Gate : public IGate<TIn, TOut> {
   using Base = IGate<TIn, TOut>;
   using OutGate = IGate<TWriteIn, TReadOut>;
 
+  Gate() = default;
+  AE_CLASS_MOVE_ONLY(Gate)
+
   // Link this Gate to some other Gate
   virtual void LinkOut(OutGate& out) = 0;
 
@@ -132,6 +135,9 @@ class Gate<TIn, TOut, TIn, TOut> : public IGate<TIn, TOut> {
  public:
   using Base = IGate<TIn, TOut>;
   using OutGate = IGate<TIn, TOut>;
+
+  Gate() = default;
+  AE_CLASS_MOVE_ONLY(Gate)
 
   // write data from left to right
   ActionView<StreamWriteAction> WriteIn(TIn in_data,
