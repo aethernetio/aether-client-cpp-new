@@ -35,6 +35,8 @@ class BufferGate : public ByteGate {
     BufferedWriteAction(ActionContext action_context, DataBuffer data,
                         TimePoint current_time);
 
+    AE_CLASS_MOVE_ONLY(BufferedWriteAction)
+
     TimePoint Update(TimePoint current_time) override;
     void Stop() override;
     void Send(ByteIGate& out_gate);
