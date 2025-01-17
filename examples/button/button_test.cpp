@@ -148,8 +148,6 @@ void AetherButtonExample() {
 
   ae::Adapter::ptr adapter{domain.LoadCopy(aether->adapter_factories.front())};
 
-  adapter->Update(ae::ClockType::now());
-
   ae::Client::ptr client_sender;
   ae::Client::ptr client_receiver;
 
