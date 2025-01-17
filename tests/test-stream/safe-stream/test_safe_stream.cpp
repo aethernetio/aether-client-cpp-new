@@ -71,7 +71,7 @@ void test_SafeStreamWriteFewData() {
                            std::end(data));
   });
 
-  safe_stream.in().WriteIn(
+  safe_stream.in().Write(
       {_100_bytes_data, _100_bytes_data + sizeof(_100_bytes_data)}, epoch);
 
   for (auto i = 0; (i < 10) && received_packet.empty(); ++i) {
@@ -82,7 +82,7 @@ void test_SafeStreamWriteFewData() {
 
   received_packet.clear();
 
-  safe_stream.in().WriteIn(
+  safe_stream.in().Write(
       {_200_bytes_data, _200_bytes_data + sizeof(_200_bytes_data)}, epoch);
 
   for (auto i = 0;
@@ -122,23 +122,23 @@ void test_SafeStreamPacketLoss() {
                            std::end(data));
   });
 
-  safe_stream.in().WriteIn(
+  safe_stream.in().Write(
       {_100_bytes_data, _100_bytes_data + sizeof(_100_bytes_data)}, epoch);
 
   for (auto i = 0; (i < 10) && received_packet.empty(); ++i) {
-    ap.Update(epoch += std::chrono::milliseconds{1});
+    ap.Update(epoch += std::chrono::milliseconds{10});
   }
 
   TEST_ASSERT_EQUAL(sizeof(_100_bytes_data), received_packet.size());
 
   received_packet.clear();
 
-  safe_stream.in().WriteIn(
+  safe_stream.in().Write(
       {_200_bytes_data, _200_bytes_data + sizeof(_200_bytes_data)}, epoch);
 
   for (auto i = 0;
        (i < 10) && (received_packet.size() < sizeof(_200_bytes_data)); ++i) {
-    ap.Update(epoch += std::chrono::milliseconds{1});
+    ap.Update(epoch += std::chrono::milliseconds{10});
   }
   TEST_ASSERT_EQUAL(sizeof(_200_bytes_data), received_packet.size());
 }
