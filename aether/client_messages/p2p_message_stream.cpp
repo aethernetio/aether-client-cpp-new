@@ -69,6 +69,10 @@ P2pStream::~P2pStream() {
   }
 }
 
+P2pStream::InGate& P2pStream::in() { return buffer_gate_; }
+
+void P2pStream::LinkOut(OutGate& /* out */) { assert(false); }
+
 void P2pStream::ConnectReceive() {
   receive_stream_ =
       receive_client_connection_->CreateStream(destination_, stream_id_);

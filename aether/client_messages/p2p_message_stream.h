@@ -17,6 +17,8 @@
 #ifndef AETHER_CLIENT_MESSAGES_P2P_MESSAGE_STREAM_H_
 #define AETHER_CLIENT_MESSAGES_P2P_MESSAGE_STREAM_H_
 
+#include "aether/common.h"
+
 #include "aether/uid.h"
 #include "aether/client.h"
 #include "aether/obj/ptr.h"
@@ -40,8 +42,11 @@ class P2pStream final : public ByteStream {
 
   ~P2pStream() override;
 
-  InGate& in() override { return buffer_gate_; }
-  void LinkOut(OutGate& /* out */) override { assert(false); }
+  AE_CLASS_NO_COPY_MOVE(P2pStream);
+
+  InGate& in() override;
+
+  void LinkOut(OutGate& /* out */) override;
 
  private:
   void ConnectReceive();
