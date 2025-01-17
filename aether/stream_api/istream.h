@@ -29,12 +29,12 @@
 
 namespace ae {
 struct StreamInfo {
-  std::size_t max_element_size; /* Max size of element available to write,
-                                   mostly the max packet size */
-  bool is_linked;               /* is stream linked somewhere */
-  bool is_writeble;             /* is stream writeable */
-  bool is_soft_writable;        /* is stream soft writeable (!is_soft_writable
-                                    && !is_writeble means write returns error) */
+  std::size_t max_element_size;  //< Max size of element available to write,
+                                 // mostly the max packet size
+  bool is_linked;                //< is stream linked somewhere
+  bool is_writeble;              //< is stream writeable */
+  bool is_soft_writable;         //< is stream soft writeable (!is_soft_writable
+                                 //&& !is_writeble means write returns error)
 };
 
 inline bool operator==(StreamInfo const& left, StreamInfo const& right) {
