@@ -48,12 +48,12 @@ SendingChunk& SendingChunkList::Register(SafeStreamRingIndex begin,
     return chunks_.back();
   }
 
-  sch.begin_offset = offset_range.begin;
-  sch.end_offset = offset_range.end;
-  sch.send_time = send_time;
+  auto& new_sch = chunks_.emplace_back(
+      SendingChunk{begin, end, sch.repeat_count, send_time});
+
   // modify any overlapping chunks
   chunks_.remove_if([&](auto& chunk) {
-    if (&chunk == &sch) {
+    if (&chunk == &new_sch) {
       return false;
     }
     if (offset_range.InRange(chunk.begin_offset)) {
@@ -61,15 +61,14 @@ SendingChunk& SendingChunkList::Register(SafeStreamRingIndex begin,
         // remove this chunk
         return true;
       }
-      chunk.begin_offset = offset_range.end;
+      chunk.begin_offset = offset_range.end + 1;
     } else if (offset_range.InRange(chunk.end_offset)) {
-      chunk.end_offset = offset_range.begin;
+      chunk.end_offset = offset_range.begin - 1;
     }
     return false;
   });
 
-  chunks_.splice(std::end(chunks_), chunks_, it);
-  return chunks_.back();
+  return new_sch;
 }
 
 void SendingChunkList::RemoveUpTo(SafeStreamRingIndex offset) {

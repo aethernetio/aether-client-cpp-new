@@ -17,7 +17,7 @@
 #ifndef AETHER_STREAM_API_SAFE_STREAM_SENDING_CHUNK_LIST_H_
 #define AETHER_STREAM_API_SAFE_STREAM_SENDING_CHUNK_LIST_H_
 
-#include <deque>
+#include <list>
 
 #include "aether/common.h"
 
@@ -26,7 +26,7 @@
 namespace ae {
 class SendingChunkList {
  public:
-  SendingChunkList(SafeStreamRingIndex::type window_size);
+  explicit SendingChunkList(SafeStreamRingIndex::type window_size);
 
   /**
    * \brief Register a new sending chunk.
@@ -44,6 +44,7 @@ class SendingChunkList {
 
   SendingChunk& front() { return chunks_.front(); }
   bool empty() const { return chunks_.empty(); }
+  std::size_t size() const { return chunks_.size(); }
 
  private:
   SafeStreamRingIndex::type window_size_;
