@@ -42,5 +42,8 @@
       "LICENSE",
       "README.md"
     ]
+  },
+  "scripts": {
+    "postinstall": ["scripts/post_scripts.py"]
   }
 }
