@@ -141,7 +141,7 @@ void SafeStreamSendingAction::SendData(TimePoint current_time) {
   }
 
   auto data_chunk =
-      send_data_buffer_.GetSlice(last_sent_offset_ + 1, max_data_size_);
+      send_data_buffer_.GetSlice(last_sent_offset_, max_data_size_);
   last_sent_offset_.Clockwise(
       static_cast<SafeStreamRingIndex::type>(data_chunk.data.size()));
 
