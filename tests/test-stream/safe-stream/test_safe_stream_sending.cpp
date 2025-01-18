@@ -68,7 +68,7 @@ void test_SafeStreamSendingFewChunks() {
 
   auto sending = SafeStreamSendingAction(ac, pc, config);
   sending.set_max_data_size(100);
-  auto _0 = sending.send_data_event().Subscribe([&](auto, auto data, auto) {
+  auto _0 = sending.write_data_event().Subscribe([&](auto, auto data, auto) {
     received_packet = std::move(data);
     auto api_parser = ae::ApiParser(pc, received_packet);
     auto mid = api_parser.Extract<MessageId>();
@@ -127,7 +127,7 @@ void test_SafeStreamSendingWaitConfirm() {
   auto sending = SafeStreamSendingAction{ac, pc, config};
   sending.set_max_data_size(100);
 
-  auto _0 = sending.send_data_event().Subscribe([&](auto, auto data, auto) {
+  auto _0 = sending.write_data_event().Subscribe([&](auto, auto data, auto) {
     received_packet = std::move(data);
     auto api_parser = ae::ApiParser(pc, received_packet);
     auto mid = api_parser.Extract<MessageId>();
@@ -172,7 +172,7 @@ void test_SafeStreamSendingRepeat() {
   auto sending = SafeStreamSendingAction{ac, pc, config};
   sending.set_max_data_size(100);
 
-  auto _0 = sending.send_data_event().Subscribe([&](auto, auto data, auto) {
+  auto _0 = sending.write_data_event().Subscribe([&](auto, auto data, auto) {
     received_packet = std::move(data);
     auto api_parser = ae::ApiParser(pc, received_packet);
     auto mid = api_parser.Extract<MessageId>();
@@ -235,7 +235,7 @@ void test_SafeStreamSendingRepeatRequest() {
   auto sending = SafeStreamSendingAction{ac, pc, config};
   sending.set_max_data_size(100);
 
-  auto _ = sending.send_data_event().Subscribe([&](auto, auto data, auto) {
+  auto _ = sending.write_data_event().Subscribe([&](auto, auto data, auto) {
     received_packet = std::move(data);
     auto api_parser = ae::ApiParser(pc, received_packet);
     auto mid = api_parser.Extract<MessageId>();

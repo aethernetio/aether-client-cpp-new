@@ -19,7 +19,7 @@
 void setUp() {}
 void tearDown() {}
 
-extern int test_send_data_action();
+extern int test_safe_stream_types();
 extern int test_safe_stream_sending();
 extern int test_safe_stream_receiving();
 extern int test_safe_stream();
@@ -30,7 +30,7 @@ extern int test_templated_streams();
 
 int main() {
   int res = 0;
-  res += test_send_data_action();
+  res += test_safe_stream_types();
   res += test_safe_stream_sending();
   res += test_safe_stream_receiving();
   res += test_safe_stream();
