@@ -101,8 +101,7 @@ void SendDataBuffer::Reject(SafeStreamRingIndex offset) {
   send_action_views_.remove_if([this, offset](auto& action) {
     auto& sending_data = action->sending_data();
     auto offset_range = sending_data.get_offset_range(window_size_);
-    // TODO: what if offset is in the middle of the range?
-    if (offset_range.Before(offset)) {
+    if (offset_range.Before(offset) || offset_range.InRange(offset)) {
       buffer_size_ -= sending_data.data.size();
       action->Failed();
       return true;
@@ -115,7 +114,7 @@ void SendDataBuffer::Stop(SafeStreamRingIndex offset) {
   send_action_views_.remove_if([this, offset](auto& action) {
     auto& sending_data = action->sending_data();
     auto offset_range = sending_data.get_offset_range(window_size_);
-    if (offset_range.Before(offset)) {
+    if (offset_range.Before(offset) || offset_range.InRange(offset)) {
       buffer_size_ -= sending_data.data.size();
       action->Stopped();
       return true;
