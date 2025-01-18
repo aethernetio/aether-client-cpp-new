@@ -142,25 +142,32 @@ void SafeStreamSendingAction::SendData(TimePoint current_time) {
 
   auto data_chunk =
       send_data_buffer_.GetSlice(last_sent_offset_, max_data_size_);
+  if (data_chunk.data.empty()) {
+    // no data to send
+    return;
+  }
+
   last_sent_offset_.Clockwise(
       static_cast<SafeStreamRingIndex::type>(data_chunk.data.size()));
 
   auto& send_chunk = sending_chunks_.Register(
       data_chunk.offset,
       data_chunk.offset +
-          static_cast<SafeStreamRingIndex::type>(data_chunk.data.size()),
+          static_cast<SafeStreamRingIndex::type>(data_chunk.data.size() - 1),
       current_time);
 
   if (send_chunk.repeat_count == 0) {
     SendFirst(std::move(data_chunk), current_time);
   } else {
-    send_chunk.repeat_count += 1;
-    if (send_chunk.repeat_count > max_repeat_count_) {
+    if ((send_chunk.repeat_count) > max_repeat_count_) {
       AE_TELED_ERROR("Repeat count exceeded");
+      sending_chunks_.RemoveUpTo(send_chunk.end_offset);
+      send_data_buffer_.Reject(send_chunk.end_offset);
       return;
     }
     SendRepeat(std::move(data_chunk), send_chunk.repeat_count, current_time);
   }
+  send_chunk.repeat_count += 1;
 }
 
 void SafeStreamSendingAction::SendFirst(DataChunk&& chunk,
