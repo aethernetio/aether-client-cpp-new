@@ -17,6 +17,7 @@
 #ifndef AETHER_STREAM_API_SAFE_STREAM_H_
 #define AETHER_STREAM_API_SAFE_STREAM_H_
 
+#include "aether/common.h"
 #include "aether/obj/ptr.h"
 #include "aether/actions/action_view.h"
 #include "aether/actions/action_list.h"
@@ -84,6 +85,8 @@ class SafeStream final : public ByteStream {
  public:
   SafeStream(ActionContext action_context, SafeStreamConfig config);
 
+  AE_CLASS_NO_COPY_MOVE(SafeStream);
+
   ByteGate::Base &in() override;
   void LinkOut(OutGate &gate) override;
 
@@ -99,8 +102,8 @@ class SafeStream final : public ByteStream {
   SafeStreamSendingAction safe_stream_sending_;
   SafeStreamReceivingAction safe_stream_receiving_;
 
-  Ptr<SafeStreamInGate> in_;
-  Ptr<SafeStreamOutGate> out_;
+  SafeStreamInGate in_;
+  SafeStreamOutGate out_;
 
   MultiSubscription subscriptions_;
 };
