@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "unity.h"
+#include <unity.h>
 
 #include <string_view>
 
@@ -77,8 +77,8 @@ void test_SendingChunkList() {
   chunk_list.Register(SafeStreamRingIndex{8}, SafeStreamRingIndex{14}, Now());
   TEST_ASSERT_EQUAL(3, chunk_list.size());
   auto& chunk = chunk_list.front();
-  TEST_ASSERT(SafeStreamRingIndex{15} == chunk.begin_offset);
-  TEST_ASSERT(SafeStreamRingIndex{20} == chunk.end_offset);
+  TEST_ASSERT(SafeStreamRingIndex(15) == chunk.begin_offset);
+  TEST_ASSERT(SafeStreamRingIndex(20) == chunk.end_offset);
   chunk_list.RemoveUpTo(SafeStreamRingIndex{7});
   TEST_ASSERT_EQUAL(2, chunk_list.size());
   chunk_list.RemoveUpTo(SafeStreamRingIndex{20});
@@ -191,7 +191,7 @@ void test_SendDataBuffer() {
   {
     auto data_slice =
         send_data_buffer.GetSlice(SafeStreamRingIndex{0}, test_data.size());
-    TEST_ASSERT(SafeStreamRingIndex{0} == data_slice.offset);
+    TEST_ASSERT(SafeStreamRingIndex(0) == data_slice.offset);
     TEST_ASSERT_EQUAL_CHAR_ARRAY(test_data.data(), data_slice.data.data(),
                                  test_data.size());
   }
@@ -199,7 +199,7 @@ void test_SendDataBuffer() {
   {
     auto data_slice =
         send_data_buffer.GetSlice(SafeStreamRingIndex{5}, test_data.size() - 5);
-    TEST_ASSERT(SafeStreamRingIndex{5} == data_slice.offset);
+    TEST_ASSERT(SafeStreamRingIndex(5) == data_slice.offset);
     TEST_ASSERT_EQUAL_CHAR_ARRAY(test_data.data() + 5, data_slice.data.data(),
                                  test_data.size() - 5);
   }
@@ -207,7 +207,7 @@ void test_SendDataBuffer() {
   {
     auto data_slice =
         send_data_buffer.GetSlice(SafeStreamRingIndex{0}, test_data.size() * 2);
-    TEST_ASSERT(SafeStreamRingIndex{0} == data_slice.offset);
+    TEST_ASSERT(SafeStreamRingIndex(0) == data_slice.offset);
     TEST_ASSERT_EQUAL_CHAR_ARRAY(test_data.data(), data_slice.data.data(),
                                  test_data.size());
     TEST_ASSERT_EQUAL_CHAR_ARRAY(test_data.data(),
