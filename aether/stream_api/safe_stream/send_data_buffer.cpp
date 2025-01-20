@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <iterator>
 
+#include "aether/tele/tele.h"
+
 namespace ae {
 SendDataBuffer::SendDataBuffer(ActionContext action_context,
                                SafeStreamRingIndex::type window_size)
@@ -31,6 +33,8 @@ void SendDataBuffer::set_window_size(SafeStreamRingIndex::type window_size) {
 }
 
 ActionView<SendingDataAction> SendDataBuffer::AddData(SendingData&& data) {
+  AE_TELED_DEBUG("Add data size {} with offset {}", data.data.size(),
+                 data.offset);
   buffer_size_ += data.data.size();
   auto action = send_actions_.Emplace(std::move(data));
   send_action_views_.emplace_back(action);
