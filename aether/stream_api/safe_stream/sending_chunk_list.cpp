@@ -57,12 +57,15 @@ SendingChunk& SendingChunkList::Register(SafeStreamRingIndex begin,
       return false;
     }
     if (offset_range.InRange(chunk.begin_offset)) {
+      new_sch.repeat_count = std::min(sch.repeat_count, chunk.repeat_count);
+
       if (offset_range.InRange(chunk.end_offset)) {
-        // remove this chunk
+        // remove this fully overlapped chunk
         return true;
       }
       chunk.begin_offset = offset_range.end + 1;
     } else if (offset_range.InRange(chunk.end_offset)) {
+      new_sch.repeat_count = std::min(sch.repeat_count, chunk.repeat_count);
       chunk.end_offset = offset_range.begin - 1;
     }
     return false;
