@@ -53,14 +53,13 @@ void test_SafeStreamWriteFewData() {
   auto epoch = TimePoint::clock::now();
 
   auto ap = ActionProcessor{};
-  auto pc = ProtocolContext{};
 
   auto received_packet = DataBuffer{};
 
   auto read_stream = MockReadStream{};
   auto write_stream = MockWriteGate{ap, std::size_t{100}};
 
-  auto safe_stream = SafeStream{pc, ap, config};
+  auto safe_stream = SafeStream{ap, config};
 
   Tie(read_stream, safe_stream, write_stream);
 
@@ -104,7 +103,7 @@ void test_SafeStreamPacketLoss() {
   auto read_stream = MockReadStream{};
   auto write_stream = MockWriteGate{ap, std::size_t{100}};
 
-  auto safe_stream = SafeStream{pc, ap, config};
+  auto safe_stream = SafeStream{ap, config};
   Tie(read_stream, safe_stream, write_stream);
 
   // loop data to itself
