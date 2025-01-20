@@ -85,6 +85,55 @@ void test_SendingChunkList() {
   TEST_ASSERT(chunk_list.empty());
 }
 
+void test_SendingChunkListRepeatCount() {
+  constexpr SafeStreamRingIndex::type window_size = 100;
+
+  SendingChunkList chunk_list{window_size};
+  {
+    auto& chunk1 = chunk_list.Register(SafeStreamRingIndex{0},
+                                       SafeStreamRingIndex{50}, Now());
+    chunk1.repeat_count = 1;
+
+    auto& chunk2 = chunk_list.Register(SafeStreamRingIndex{51},
+                                       SafeStreamRingIndex{60}, Now());
+    chunk2.repeat_count = 2;
+    auto& chunk3 = chunk_list.Register(SafeStreamRingIndex{61},
+                                       SafeStreamRingIndex{90}, Now());
+    chunk3.repeat_count = 3;
+  }
+  // re register chunk
+  {
+    auto& chunk = chunk_list.front();
+    TEST_ASSERT_EQUAL(1, chunk.repeat_count);
+    auto& chunk1 = chunk_list.Register(SafeStreamRingIndex{0},
+                                       SafeStreamRingIndex{50}, Now());
+    TEST_ASSERT_EQUAL(1, chunk1.repeat_count);
+    auto& front_chunk = chunk_list.front();
+    TEST_ASSERT_EQUAL(2, front_chunk.repeat_count);
+  }
+  // merge chunks
+  {
+    auto& chunk1 = chunk_list.Register(SafeStreamRingIndex{0},
+                                       SafeStreamRingIndex{60}, Now());
+    TEST_ASSERT_EQUAL(1, chunk1.repeat_count);
+    auto& front_chunk = chunk_list.front();
+    TEST_ASSERT_EQUAL(3, front_chunk.repeat_count);
+  }
+  // split chunks
+  {
+    auto& chunk1 = chunk_list.Register(SafeStreamRingIndex{0},
+                                       SafeStreamRingIndex{30}, Now());
+    TEST_ASSERT_EQUAL(1, chunk1.repeat_count);
+    auto& front_chunk = chunk_list.front();
+    TEST_ASSERT_EQUAL(3, front_chunk.repeat_count);
+    auto& chunk2 = chunk_list.Register(SafeStreamRingIndex{31},
+                                       SafeStreamRingIndex{60}, Now());
+    TEST_ASSERT_NOT_EQUAL(&chunk1, &chunk2);
+    TEST_ASSERT_EQUAL(1, chunk2.repeat_count);
+    chunk2.repeat_count = 2;
+  }
+}
+
 constexpr std::string_view test_data = "Pure refreshment in every drop";
 
 struct ActionResult {
@@ -202,6 +251,7 @@ int test_safe_stream_types() {
   UNITY_BEGIN();
   RUN_TEST(ae::test_safe_stream_types::test_OffsetRange);
   RUN_TEST(ae::test_safe_stream_types::test_SendingChunkList);
+  RUN_TEST(ae::test_safe_stream_types::test_SendingChunkListRepeatCount);
   RUN_TEST(ae::test_safe_stream_types::test_SendDataBuffer);
   return UNITY_END();
 }
