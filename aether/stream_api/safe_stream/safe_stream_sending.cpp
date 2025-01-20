@@ -28,11 +28,11 @@ SafeStreamSendingAction::SafeStreamSendingAction(
     SafeStreamConfig const& config)
     : Action{action_context},
       protocol_context_{protocol_context},
-      max_data_size_{config.max_data_size},
       buffer_capacity_{config.buffer_capacity},
       window_size_{config.window_size},
       max_repeat_count_{config.max_repeat_count},
       wait_confirm_timeout_{config.wait_confirm_timeout},
+      max_data_size_{},
       send_data_buffer_{action_context, window_size_},
       sending_chunks_{window_size_},
       last_confirmed_{},
@@ -44,7 +44,9 @@ SafeStreamSendingAction::~SafeStreamSendingAction() = default;
 TimePoint SafeStreamSendingAction::Update(TimePoint current_time) {
   auto new_time = HandleTimeouts(current_time);
 
-  SendData(current_time);
+  if (max_data_size_ != 0) {
+    SendData(current_time);
+  }
   return new_time;
 }
 
@@ -112,8 +114,9 @@ void SafeStreamSendingAction::ReportWriteError(SafeStreamRingIndex offset) {
 }
 
 void SafeStreamSendingAction::set_max_data_size(std::size_t max_data_size) {
-  // TODO: add update sending_chunk_list
   max_data_size_ = static_cast<SafeStreamRingIndex::type>(max_data_size);
+  AE_TELED_DEBUG("Set max data size to {}", max_data_size_);
+  Action::Trigger();
 }
 
 TimePoint SafeStreamSendingAction::HandleTimeouts(TimePoint current_time) {

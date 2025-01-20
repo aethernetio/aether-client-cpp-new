@@ -78,12 +78,12 @@ class SafeStreamSendingAction : public Action<SafeStreamSendingAction> {
   void StopSending(SafeStreamRingIndex offset);
 
   ProtocolContext& protocol_context_;
-  SafeStreamRingIndex::type max_data_size_;
   SafeStreamRingIndex::type buffer_capacity_;
   SafeStreamRingIndex::type window_size_;
   std::uint16_t max_repeat_count_;
   Duration wait_confirm_timeout_;
   SafeStreamApi safe_stream_api_;
+  SafeStreamRingIndex::type max_data_size_;
 
   SendDataBuffer send_data_buffer_;
   SendingChunkList sending_chunks_;
