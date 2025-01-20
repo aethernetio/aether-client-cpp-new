@@ -240,7 +240,7 @@ void AetherCloudExample() {
                     receive_count++;
                   }
                   auto confirm_msg = std::string{"confirmed "} + str_msg;
-                  receiver_stream->in().WriteIn(
+                  receiver_stream->in().Write(
                       {confirm_msg.data(),
                        confirm_msg.data() + confirm_msg.size()},
                       ae::Now());
@@ -253,8 +253,8 @@ void AetherCloudExample() {
 
   AE_TELED_DEBUG("Send messages from client2 to client1");
   for (auto const& message : messages) {
-    sender_stream->in().WriteIn({std::begin(message), std::end(message)},
-                                ae::Now());
+    sender_stream->in().Write({std::begin(message), std::end(message)},
+                              ae::Now());
   }
 
   auto _s1 =

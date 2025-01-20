@@ -39,7 +39,7 @@ namespace ae {
 
 class SafeStreamSendingAction : public Action<SafeStreamSendingAction> {
  public:
-  using SenDataEvent = Event<void(SafeStreamRingIndex offset, DataBuffer data,
+  using SenDataEvent = Event<void(SafeStreamRingIndex offset, DataBuffer&& data,
                                   TimePoint current_time)>;
 
   SafeStreamSendingAction(ActionContext action_context,
@@ -69,7 +69,7 @@ class SafeStreamSendingAction : public Action<SafeStreamSendingAction> {
   void SendData(TimePoint current_time);
   void SendFirst(SendingChunk const& chunk, TimePoint current_time);
   void SendRepeat(SendingChunk const& chunk, TimePoint current_time);
-  void SendDataBuffer(SafeStreamRingIndex offset, DataBuffer packet,
+  void SendDataBuffer(SafeStreamRingIndex offset, DataBuffer&& packet,
                       TimePoint current_time);
 
   void StopSending(SafeStreamRingIndex offset);
